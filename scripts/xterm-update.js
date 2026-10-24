@@ -30,7 +30,7 @@ if (!path.basename(vscodeDir).match(/.*vscode.*/)) {
 
 function getLatestModuleVersion(moduleName) {
 	return new Promise((resolve, reject) => {
-		cp.exec(`npm view ${moduleName} versions --json`, { cwd: vscodeDir }, (err, stdout, stderr) => {
+		cp.exec(`pnpm view ${moduleName} versions --json`, { cwd: vscodeDir }, (err, stdout, stderr) => {
 			if (err) {
 				reject(err);
 			}
@@ -42,6 +42,15 @@ function getLatestModuleVersion(moduleName) {
 			resolve(versions[versions.length - 1]);
 		});
 	});
+}
+
+/**
+ * `pnpm add name@version` saves the exact version, so ask for the caret range that the
+ * package.json files use.
+ */
+function toCaretRange(moduleWithVersion) {
+	const index = moduleWithVersion.lastIndexOf('@');
+	return `${moduleWithVersion.slice(0, index)}@^${moduleWithVersion.slice(index + 1)}`;
 }
 
 async function update() {
@@ -77,7 +86,7 @@ async function update() {
 	if (modulesWithVersion.length > 0) {
 		for (const cwd of [vscodeDir, path.join(vscodeDir, 'remote'), path.join(vscodeDir, 'remote/web')]) {
 			console.log(`${path.join(cwd, 'package.json')}: Updating\n  ${modulesWithVersion.join('\n  ')}`);
-			cp.execSync(`npm install ${modulesWithVersion.join(' ')}`, { cwd });
+			cp.execSync(`pnpm add ${modulesWithVersion.map(toCaretRange).join(' ')}`, { cwd });
 		}
 	}
 
@@ -93,7 +102,7 @@ async function update() {
 	if (backendOnlyModulesWithVersion.length > 0) {
 		for (const cwd of [vscodeDir, path.join(vscodeDir, 'remote')]) {
 			console.log(`${path.join(cwd, 'package.json')}: Updating\n  ${backendOnlyModulesWithVersion.join('\n  ')}`);
-			cp.execSync(`npm install ${backendOnlyModulesWithVersion.join(' ')}`, { cwd });
+			cp.execSync(`pnpm add ${backendOnlyModulesWithVersion.map(toCaretRange).join(' ')}`, { cwd });
 		}
 	}
 }
