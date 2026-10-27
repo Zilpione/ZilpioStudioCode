@@ -1159,6 +1159,7 @@ suite('SessionsChatAccessibilityHelp', () => {
 				sessionId: 'judge',
 				resource: judgeResource,
 			}));
+			override readonly mainWindowActiveSession = this.activeSession;
 		}());
 		instantiationService.stub(ISessionComparisonService, new class extends mock<ISessionComparisonService>() {
 			override readonly comparisons = constObservable([comparison]);
