@@ -8,7 +8,7 @@ import { $ } from '../../../../../base/browser/dom.js';
 import { mainWindow } from '../../../../../base/browser/window.js';
 import { DisposableStore, toDisposable } from '../../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { computeSessionGridLayout, ISessionGridLayoutState, SessionGridCell, SessionLayoutMode, SessionTerminalPosition } from '../../../../common/sessionGridLayout/sessionGridLayout.js';
+import { computeSessionGridLayout, ISessionGridLayoutState, SessionGridCell, SessionHeaderSpan, SessionLayoutMode, SessionTerminalPosition } from '../../../../common/sessionGridLayout/sessionGridLayout.js';
 import { ChatWindowCellView, ChatWindowGridHost, getChatWindowCellInsets } from '../../browser/chatWindowGridHost.js';
 import { getChatWindowDefaultSizing } from '../../browser/chatWindowService.js';
 
@@ -248,6 +248,66 @@ suite('ChatWindowGridHost', () => {
 			[SessionLayoutMode.ChatOnly]: withGap,
 			noGap: { sashes: true, gripped: false, none: true },
 		});
+		store.dispose();
+	});
+
+	test('the header is above the chat\'s column only beside the editor, where the editor runs to the top of the window, its top row centered with the header; every card starts below a header across the window in the other modes', () => {
+		const store = disposables.add(new DisposableStore());
+		const { host, container, cells, boxes } = createHost(store);
+		// The top of each card that shows: its place in the grid, inset by its gap (the cells and cards take their place from
+		// CSS, not loaded here).
+		const cardTops = () => {
+			const top = container.getBoundingClientRect().top;
+			const result: Record<string, number> = {};
+			for (const [cell, view] of cells) {
+				const rect = view.element.parentElement?.getBoundingClientRect();
+				if (rect && rect.height > 0 && !view.element.classList.contains('hidden') && cell !== SessionGridCell.Column) {
+					const card = view.element.querySelector<HTMLElement>('.chat-window-cell-card');
+					result[cell] = Math.round(rect.top - top) + parseInt(card?.style.inset || '0');
+				}
+			}
+			return result;
+		};
+		const result: Record<string, unknown> = {};
+		// The title row and the top row of the side pane: as tall in compact density, the title row taller in default density.
+		for (const [density, header, row] of [['default', 44, 35], ['compact', 35, 35]] as const) {
+			host.setHeader(header, true, row);
+			for (const mode of [SessionLayoutMode.SideBySide, SessionLayoutMode.Stacked, SessionLayoutMode.EditorOnly, SessionLayoutMode.ChatOnly]) {
+				host.apply(computeSessionGridLayout(state({ mode })));
+				const cards = cardTops();
+				const bottom = Math.max(...Array.from(cells.values(), view => Math.round((view.element.parentElement?.getBoundingClientRect().bottom ?? 0) - container.getBoundingClientRect().top)));
+				result[`${density}/${mode}`] = {
+					span: host.headerSpan, top: Math.min(...Object.values(cards)), bottom,
+					...(mode === SessionLayoutMode.SideBySide ? { chat: cards[SessionGridCell.Chat], sidePane: cards[SessionGridCell.SidePane], sidePaneRow: boxes.get(SessionGridCell.SidePane)!.top } : {}),
+				};
+			}
+		}
+		const full = (header: number) => ({ span: SessionHeaderSpan.Full, top: header, bottom: HEIGHT });
+		assert.deepStrictEqual(result, {
+			[`default/${SessionLayoutMode.SideBySide}`]: { span: SessionHeaderSpan.ChatColumn, top: 0, bottom: HEIGHT, chat: 44, sidePane: 0, sidePaneRow: 4 },
+			[`default/${SessionLayoutMode.Stacked}`]: full(44),
+			[`default/${SessionLayoutMode.EditorOnly}`]: full(44),
+			[`default/${SessionLayoutMode.ChatOnly}`]: full(44),
+			[`compact/${SessionLayoutMode.SideBySide}`]: { span: SessionHeaderSpan.ChatColumn, top: 0, bottom: HEIGHT, chat: 35, sidePane: 0, sidePaneRow: 0 },
+			[`compact/${SessionLayoutMode.Stacked}`]: full(35),
+			[`compact/${SessionLayoutMode.EditorOnly}`]: full(35),
+			[`compact/${SessionLayoutMode.ChatOnly}`]: full(35),
+		});
+		store.dispose();
+	});
+
+	test('a mode shows with the sizes it had when the header moves between the chat\'s column and across the window', () => {
+		const store = disposables.add(new DisposableStore());
+		const { host, cells } = createHost(store);
+		host.setHeader(40, true);
+		host.apply(computeSessionGridLayout(state({ mode: SessionLayoutMode.SideBySide })));
+		host.resizeCell(SessionGridCell.Terminals, { height: 300 });
+		const sizes = () => [SessionGridCell.Chat, SessionGridCell.SidePane, SessionGridCell.Terminals].map(cell => cells.get(cell)!.element.parentElement!.getBoundingClientRect().height);
+		const before = sizes();
+		for (const mode of [SessionLayoutMode.Stacked, SessionLayoutMode.EditorOnly, SessionLayoutMode.ChatOnly, SessionLayoutMode.SideBySide]) {
+			host.apply(computeSessionGridLayout(state({ mode })));
+		}
+		assert.deepStrictEqual(sizes(), before);
 		store.dispose();
 	});
 
