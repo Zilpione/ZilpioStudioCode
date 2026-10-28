@@ -2005,10 +2005,11 @@ export class PluginListWidget extends Disposable {
 
 		this.updateToolbarActions();
 
-		this.searchInput.setPlaceHolder(browse
+		const searchLabel = browse
 			? localize('searchMarketplacePlaceholder', "Search plugin marketplace...")
-			: localize('searchPluginsPlaceholder', "Search plugins...")
-		);
+			: localize('searchPluginsPlaceholder', "Search plugins...");
+		this.searchInput.setPlaceHolder(searchLabel);
+		this.searchInput.setAriaLabel(searchLabel);
 
 		if (browse) {
 			void this.queryMarketplace();
