@@ -48,6 +48,7 @@ import { ChatWindowContext, ChatWindowEditorAreaEditorContext, ChatWindowEditorG
 import { ISessionsPartService, IWindowSessionViewHost } from '../../../services/sessions/browser/sessionsPartService.js';
 import { ISessionsService } from '../../../services/sessions/browser/sessionsService.js';
 import { ISession } from '../../../services/sessions/common/session.js';
+import { ISessionLayoutModeService } from '../../../services/layoutMode/common/sessionLayoutModeService.js';
 import { IActiveSession, ISessionsManagementService } from '../../../services/sessions/common/sessionsManagement.js';
 import { ISessionChangesService } from '../../changes/common/sessionChangesService.js';
 import { ISessionEditorWorkingSetService } from '../../layout/common/sessionEditorWorkingSet.js';
@@ -57,7 +58,7 @@ import { ChatWindowCellView, ChatWindowCellSizing, ChatWindowGridHost, IChatWind
 import { addEmptyEditorAreaAddTab } from './chatWindowEditorArea.js';
 import { ChatWindowInputOnlyController } from './chatWindowInputOnly.js';
 import { ChatWindowTerminals, releaseChatWindowTerminalsOnUnload } from './chatWindowTerminals.js';
-import { ChatWindowChatLayouts, ChatWindowChatSizes, ChatWindowDefaults, ChatWindowState } from './chatWindowState.js';
+import { ChatWindowChatLayouts, ChatWindowChatSizes, ChatWindowDefaults, ChatWindowState, createChatWindowRememberedMode } from './chatWindowState.js';
 import { setChatWindowOpenServices } from './chatWindowOpener.js';
 
 /** The size of a chat window, unless its kind has one. */
@@ -453,7 +454,6 @@ export class ChatWindowService extends Disposable implements IChatWindowService 
 	readonly windows: IObservable<readonly IChatWindow[]> = this._windows;
 
 	private readonly _opening = new InFlightOperations<IChatWindow | undefined>();
-	private readonly _chatLayouts: ChatWindowChatLayouts;
 	private readonly _chatSizes: ChatWindowChatSizes;
 
 	/** What each chat window holds on to while its view binds to the chat: the loaded model of the chat; see {@link ChatModelHold}. */
@@ -481,10 +481,10 @@ export class ChatWindowService extends Disposable implements IChatWindowService 
 		@IOpenerService private readonly _openerService: IOpenerService,
 		@IFileService private readonly _fileService: IFileService,
 		@ISessionChangesService private readonly _sessionChangesService: ISessionChangesService,
+		@ISessionLayoutModeService private readonly _layoutModeService: ISessionLayoutModeService,
 	) {
 		super();
 
-		this._chatLayouts = new ChatWindowChatLayouts(_storageService);
 		this._chatSizes = new ChatWindowChatSizes(_storageService);
 
 		// A chat window shows its session for as long as the session shows in a window: closing the session closes it.
@@ -551,14 +551,7 @@ export class ChatWindowService extends Disposable implements IChatWindowService 
 		const sessionObs = observableValue<IActiveSession | undefined>(this, undefined);
 		// What the window shows acts on its session, not on the one the main window shows.
 		const sessionScope: ISessionScope = { _serviceBrand: undefined, session: sessionObs };
-		const state = new ChatWindowState(kind, hasEditorArea, new ChatWindowDefaults(kind, this._storageService), {
-			initial: this._chatLayouts.get(chatResource),
-			// For the chat the window shows when the user chooses, which a replaced session changes.
-			set: layout => {
-				const chat = sessionObs.get()?.activeChat.get().resource ?? chatResource;
-				this._chatLayouts.set(chat, layout);
-			},
-		});
+		const state = new ChatWindowState(kind, hasEditorArea, new ChatWindowDefaults(kind, this._storageService), createChatWindowRememberedMode(this._layoutModeService, session, chatResource, sessionObs));
 
 		const auxiliaryWindow = disposables.add(await this._auxiliaryWindowService.open({ bounds: kind.windowSize ?? CHAT_WINDOW_DEFAULT_SIZE }));
 		opening.close = () => {
@@ -678,7 +671,7 @@ export class ChatWindowService extends Disposable implements IChatWindowService 
 			const chat = sessionObs.get()?.activeChat.get().resource ?? chatResource;
 			this._chatSizes.set(chat, gridHost.exportSizes());
 			if (hasEditorArea) {
-				this._chatLayouts.set(chat, { mode: state.layout.get(), splitLayout: state.splitLayout.get(), inputOnly: state.inputOnly.get() });
+				this._layoutModeService.setChatWindowMode({ sessionResource: sessionObs.get()?.resource ?? session.resource, chatResource: chat }, { mode: state.layout.get(), splitLayout: state.splitLayout.get(), inputOnly: state.inputOnly.get() });
 			}
 		};
 		disposables.add(this._storageService.onWillSaveState(saveSizes));
