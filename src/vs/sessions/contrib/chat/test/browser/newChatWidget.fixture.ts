@@ -718,7 +718,7 @@ async function renderNewChatWidget(context: ComponentFixtureContext, options: IN
 		},
 	});
 	if (showTip || connectorRecommendations) {
-		ChatContextKeys.foregroundSessionCount.bindTo(instantiationService.get(IContextKeyService)).set(0);
+		ChatContextKeys.foregroundSessionCount.bindTo(instantiationService.get(IContextKeyService)).set(1);
 	}
 	await instantiationService.get(IConfigurationService).updateValue(COMPARE_AGENTS_ENABLED_SETTING, true);
 
@@ -1113,7 +1113,7 @@ async function renderNewChatWidget(context: ComponentFixtureContext, options: IN
 	}
 	if (showTip) {
 		const tip = view.element.querySelector<HTMLElement>('.chat-tip-widget');
-		assert(!!tip && targetWindow.getComputedStyle(tip).display !== 'none', 'The getting-started tip must be visible.');
+		assert(!!tip && targetWindow.getComputedStyle(tip).display !== 'none' && tip.getBoundingClientRect().height > 0, 'The getting-started tip must be visible.');
 	}
 	if (connectorRecommendations && showTip && migrationCount > 0) {
 		const tip = view.element.querySelector<HTMLElement>('.chat-tip-widget');

@@ -27,7 +27,7 @@ import { IActiveSession, ICreateNewSessionOptions, ISendRequestSentEvent, Worksp
 import { ISendRequestOptions, ISessionsProvider } from '../../../../services/sessions/common/sessionsProvider.js';
 import { IOpenNewSessionOptions, IOpenNewSessionResult } from '../../../../services/sessions/browser/sessionsService.js';
 import { IPickedSessionType, IPreferredSessionType } from '../../browser/sessionTypePicker.js';
-import { NewChatWidget } from '../../browser/newChatWidget.js';
+import { NewChatWidget, shouldShowNewSessionChatTip } from '../../browser/newChatWidget.js';
 import { IStorageService, InMemoryStorageService, StorageScope, StorageTarget } from '../../../../../platform/storage/common/storage.js';
 import { ITelemetryService } from '../../../../../platform/telemetry/common/telemetry.js';
 import { TestExperimentTriggerTelemetryService } from '../../../../../platform/telemetry/test/common/experimentTriggerTestUtils.js';
@@ -2457,6 +2457,17 @@ suite('NewChatWidget', () => {
 		}));
 
 		assert.deepStrictEqual(eligibility, [false, false, true, true]);
+	});
+
+	test('shows a tip only when the new-session composer is the sole foreground chat widget', () => {
+		assert.deepStrictEqual([
+			shouldShowNewSessionChatTip(true, true, undefined),
+			shouldShowNewSessionChatTip(true, true, 0),
+			shouldShowNewSessionChatTip(true, true, 1),
+			shouldShowNewSessionChatTip(true, true, 2),
+			shouldShowNewSessionChatTip(false, true, 1),
+			shouldShowNewSessionChatTip(true, false, 1),
+		], [false, false, true, false, false, false]);
 	});
 
 	test('forwards every composer context pill to the first chat request', async () => {

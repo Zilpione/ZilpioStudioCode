@@ -99,6 +99,11 @@ import { filterConfigurationToSchema } from '../../../../workbench/contrib/chat/
 
 /** Minimum number of started sessions required before showing tips and promotions. */
 const MIN_SESSIONS_FOR_FIRST_RUN_NOTICES = 2;
+
+export function shouldShowNewSessionChatTip(hasAgentHost: boolean, hasEnoughSessions: boolean, foregroundSessionCount: number | undefined): boolean {
+	return hasAgentHost && hasEnoughSessions && foregroundSessionCount === 1;
+}
+
 /** Persists whether the user explicitly chose to expand the new-session options tray. */
 const SESSION_OPTIONS_EXPANDED_STORAGE_KEY = 'agentSessions.newSession.sessionOptionsExpanded2';
 const WELCOME_PHRASE_INDEX_STORAGE_KEY = 'agentSessions.newSession.welcomePhraseIndex';
@@ -926,7 +931,7 @@ export class NewChatWidget extends Disposable {
 			if (showBelowInput) {
 				belowInputSurfaces.prepend(chatTipContainer);
 			} else {
-				inputTipSlot?.appendChild(chatTipContainer);
+				inputTipSlot?.parentElement?.insertBefore(chatTipContainer, inputTipSlot);
 			}
 		}));
 		this._register(this.instantiationService.createInstance(NewChatMigrationNotice, belowInputSurfaces, this._session, () => this.focusInput()));
@@ -944,12 +949,13 @@ export class NewChatWidget extends Disposable {
 						this.chatTipService.resetSession();
 					}
 				},
-				// No tip in the no-agent-host empty state: there is no usable composer.
-				// Tips also stay away until the user has actually started a couple of
-				// sessions, so a first-run composer is not busy.
-				isEligible: () => !chatWidgetContent.classList.contains('no-agent-host')
-					&& this._hasEnoughSessionsForFirstRunNotices()
-					&& this.contextKeyService.getContextKeyValue<number>(ChatContextKeys.foregroundSessionCount.key) === 0,
+				// The composer owns one foreground chat widget itself. Another foreground
+				// widget raises the count above one and suppresses the tip.
+				isEligible: () => shouldShowNewSessionChatTip(
+					!chatWidgetContent.classList.contains('no-agent-host'),
+					this._hasEnoughSessionsForFirstRunNotices(),
+					this.contextKeyService.getContextKeyValue<number>(ChatContextKeys.foregroundSessionCount.key),
+				),
 				focusInput: () => this.focusInput(),
 			},
 			this._newChatInput.noticeHost,
