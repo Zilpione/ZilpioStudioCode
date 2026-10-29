@@ -5,7 +5,7 @@
 	<meta charset="UTF-8">
 
 	<meta http-equiv="Content-Security-Policy"
-		content="default-src 'none'; script-src 'sha256-FFQoOVVa2tOE3uqUvirwaMNT20TZmrHcL2aaOjJ8BUo=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
+		content="default-src 'none'; script-src 'sha256-m7oN8s4CLEfwW6uLRNW6cESWxnB6o9iPA7ZDouJhbCI=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
 
 	<!-- Disable pinch zooming -->
 	<meta name="viewport"
@@ -779,6 +779,13 @@
 			});
 		};
 
+		function handleInnerEditorDragStartEvent(/** @type {DragEvent} */ e) {
+			// Editor resources belong to the workbench, even when the inner page handles file drops.
+			if (!e.shiftKey && e.dataTransfer?.types.includes('codeeditors')) {
+				hostMessaging.postMessage('drag-start', undefined);
+			}
+		}
+
 		function handleInnerDragStartEvent(/** @type {DragEvent} */ e) {
 			if (e.defaultPrevented) {
 				// Extension code has already handled this event
@@ -911,6 +918,7 @@
 		window.addEventListener('keydown', handleInnerKeydown);
 		window.addEventListener('keyup', handleInnerKeyup);
 		window.addEventListener('dragenter', handleInnerDragStartEvent);
+		window.addEventListener('dragenter', handleInnerEditorDragStartEvent, true);
 		window.addEventListener('dragover', handleInnerDragEvent);
 		window.addEventListener('drag', handleInnerDragEvent);
 		window.addEventListener('drop', handleInnerDropEvent);
@@ -1217,6 +1225,7 @@
 					});
 
 					contentWindow.addEventListener('dragenter', handleInnerDragStartEvent);
+					contentWindow.addEventListener('dragenter', handleInnerEditorDragStartEvent, true);
 					contentWindow.addEventListener('dragover', handleInnerDragEvent);
 					contentWindow.addEventListener('drag', handleInnerDragEvent);
 					contentWindow.addEventListener('drop', handleInnerDropEvent);

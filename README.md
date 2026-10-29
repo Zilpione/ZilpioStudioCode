@@ -1,76 +1,27 @@
-# Visual Studio Code - Open Source ("Code - OSS")
-[![Feature Requests](https://img.shields.io/github/issues/microsoft/vscode/feature-request.svg)](https://github.com/microsoft/vscode/issues?q=is%3Aopen+is%3Aissue+label%3Afeature-request+sort%3Areactions-%2B1-desc)
-[![Bugs](https://img.shields.io/github/issues/microsoft/vscode/bug.svg)](https://github.com/microsoft/vscode/issues?utf8=✓&q=is%3Aissue+is%3Aopen+label%3Abug)
+﻿# ZilpioStudioCode
 
-## The Repository
+ZilpioStudioCode è un progetto indipendente basato sul codice open source [Code - OSS](https://github.com/microsoft/vscode), il repository da cui nasce Visual Studio Code. Non è un prodotto Microsoft e non è affiliato a Microsoft o OpenAI.
 
-This repository ("`Code - OSS`") is where we (Microsoft) develop the [Visual Studio Code](https://code.visualstudio.com) product together with the community. Not only do we work on code and issues here, but we also publish our [roadmap](https://github.com/microsoft/vscode/wiki/Roadmap), [monthly iteration plans](https://github.com/microsoft/vscode/wiki/Iteration-Plans), and our [endgame plans](https://github.com/microsoft/vscode/wiki/Running-the-Endgame). This source code is available to everyone under the standard [MIT license](https://github.com/microsoft/vscode/blob/main/LICENSE.txt).
+Il progetto sperimenta un editor per Windows con integrazione Codex, profili e ambienti separati, gestione dei workspace, ZilpioAgents e una vista Trello. È in sviluppo: il repository contiene sorgenti e strumenti di sviluppo, non una release autonoma pronta per l'installazione.
 
-## Visual Studio Code
+## Stato e avvio
 
-<p align="center">
-  <img alt="VS Code in action" src="https://github.com/user-attachments/assets/56af271c-949d-454c-a3ea-16188c063414">
-</p>
+La base upstream è il tag Code - OSS 1.141.0. Per i prerequisiti e la compilazione di Code - OSS consulta la [guida upstream](https://github.com/microsoft/vscode/wiki/How-to-Contribute). Lo script `scripts/zilpio.ps1` avvia l'editor dai sorgenti con directory di dati separate.
 
-[Visual Studio Code](https://code.visualstudio.com) is a distribution of the `Code - OSS` repository with Microsoft-specific customizations released under a traditional [Microsoft product license](https://code.visualstudio.com/License/).
+L'anteprima locale (`AvviaAnteprima.bat` e `scripts/preview-zilpio.ps1`) dipende da strumenti e componenti preparati separatamente in `.build/`, che non sono inclusi nel repository. In particolare usa una copia della distribuzione Microsoft e una versione specifica dell'estensione ufficiale Codex, modificata localmente: non è una build autonoma e questi componenti sono soggetti alle rispettive licenze e condizioni. Non redistribuirli senza verificare i relativi diritti. Il launcher `ZSCode.exe` è un artefatto generato localmente e non è incluso.
 
-[Visual Studio Code](https://code.visualstudio.com) combines the simplicity of a code editor with what developers need for their core edit-build-debug cycle. It provides comprehensive code editing, navigation, and understanding support along with lightweight debugging, a rich extensibility model, and lightweight integration with existing tools.
+Il notifier in `extensions/zilpio-codex-notifier` include il proprio sorgente. Per compilarlo, dalla sua cartella esegui `npm ci` seguito da `npm run compile`; `npm test` compila ed esegue i test. Gli output generati `dist/` sono esclusi da Git.
 
-Visual Studio Code is updated monthly with new features and bug fixes. You can download it for Windows, macOS, and Linux on the [Visual Studio Code website](https://code.visualstudio.com/Download). To get the latest releases every day, install the [Insiders build](https://code.visualstudio.com/insiders).
+## Estensioni e servizi
 
-## Contributing
+Il Visual Studio Marketplace di Microsoft non è disponibile per prodotti alternativi basati su fork di Code - OSS secondo le [FAQ ufficiali](https://code.visualstudio.com/docs/supporting/faq). Le estensioni e i servizi di terze parti possono avere licenze e condizioni proprie. L'accesso a Codex, Trello e altri servizi richiede configurazione e account separati.
 
-There are many ways in which you can participate in this project, for example:
+## Configurazione personale
 
-* [Submit bugs and feature requests](https://github.com/microsoft/vscode/issues), and help us verify them as they are checked in
-* Review [source code changes](https://github.com/microsoft/vscode/pulls)
-* Review the [documentation](https://github.com/microsoft/vscode-docs) and make pull requests for anything from typos to new content.
+Le impostazioni personali restano locali: `.vscode/settings.json`, `extensions/zilpio-codex/profiles.json`, `scripts/preview-zilpio.local.ps1` e `.build/` sono esclusi da Git. I registri esistenti degli account, degli ambienti e dei workspace mantengono i propri valori. Non inserire credenziali nei sorgenti o nei file di esempio.
 
-If you are interested in fixing issues and contributing directly to the codebase, please see the document [How to Contribute](https://github.com/microsoft/vscode/wiki/How-to-Contribute), which covers the following:
+Un nuovo clone usa `extensions/zilpio-codex/profiles.example.json` come configurazione iniziale; è possibile copiarlo in `profiles.json` per personalizzare gli account importati. Le impostazioni di sviluppo generiche sono disponibili in `.vscode/settings.example.json`. Lo script opzionale `scripts/preview-zilpio.local.ps1` permette di impostare `CODEX_HOME` e `zilpioNotifierPublisher` soltanto per la propria anteprima locale.
 
-* [How to build and run from source](https://github.com/microsoft/vscode/wiki/How-to-Contribute)
-* [The development workflow, including debugging and running tests](https://github.com/microsoft/vscode/wiki/How-to-Contribute#debugging)
-* [Coding guidelines](https://github.com/microsoft/vscode/wiki/Coding-Guidelines)
-* [Submitting pull requests](https://github.com/microsoft/vscode/wiki/How-to-Contribute#pull-requests)
-* [Finding an issue to work on](https://github.com/microsoft/vscode/wiki/How-to-Contribute#where-to-contribute)
-* [Contributing to translations](https://aka.ms/vscodeloc)
+## Licenze
 
-## Feedback
-
-* Ask a question on [Stack Overflow](https://stackoverflow.com/questions/tagged/vscode)
-* [Request a new feature](CONTRIBUTING.md)
-* Upvote [popular feature requests](https://github.com/microsoft/vscode/issues?q=is%3Aopen+is%3Aissue+label%3Afeature-request+sort%3Areactions-%2B1-desc)
-* [File an issue](https://github.com/microsoft/vscode/issues)
-* Connect with the extension author community on [GitHub Discussions](https://github.com/microsoft/vscode-discussions/discussions) or [Slack](https://aka.ms/vscode-dev-community)
-* Follow [@code](https://x.com/code) and let us know what you think!
-
-See our [wiki](https://github.com/microsoft/vscode/wiki/Feedback-Channels) for a description of each of these channels and information on some other available community-driven channels.
-
-## Related Projects
-
-Many of the core components and extensions to VS Code live in their own repositories on GitHub. For example, the [node debug adapter](https://github.com/microsoft/vscode-node-debug) and the [mono debug adapter](https://github.com/microsoft/vscode-mono-debug) repositories are separate from each other. For a complete list, please visit the [Related Projects](https://github.com/microsoft/vscode/wiki/Related-Projects) page on our [wiki](https://github.com/microsoft/vscode/wiki).
-
-## Bundled Extensions
-
-VS Code includes a set of built-in extensions located in the [extensions](extensions) folder, including grammars and snippets for many languages. Extensions that provide rich language support (inline suggestions, Go to Definition) for a language have the suffix `language-features`. For example, the `json` extension provides coloring for `JSON` and the `json-language-features` extension provides rich language support for `JSON`.
-
-## Development Container
-
-This repository includes a Visual Studio Code Dev Containers / GitHub Codespaces development container.
-
-* For [Dev Containers](https://aka.ms/vscode-remote/download/containers), use the **Dev Containers: Clone Repository in Container Volume...** command, which creates a Docker volume for better disk I/O on macOS and Windows.
-  * If you already have VS Code and Docker installed, you can also click [here](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/microsoft/vscode) to get started. This will cause VS Code to automatically install the Dev Containers extension if needed, clone the source code into a container volume, and spin up a dev container for use.
-
-* For Codespaces, install the [GitHub Codespaces](https://marketplace.visualstudio.com/items?itemName=GitHub.codespaces) extension in VS Code, and use the **Codespaces: Create New Codespace** command.
-
-Docker / the Codespace should have at least **4 cores and 6 GB of RAM (8 GB recommended)** to run a full build. See the [development container README](.devcontainer/README.md) for more information.
-
-## Code of Conduct
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information, see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
-
-## License
-
-Copyright (c) Microsoft Corporation. All rights reserved.
-
-Licensed under the [MIT](LICENSE.txt) license.
+Il codice di Code - OSS e le modifiche del fork sono distribuiti sotto la [licenza MIT](LICENSE.txt). Conservare gli avvisi di copyright e licenza e consultare [ThirdPartyNotices.txt](ThirdPartyNotices.txt) per i componenti di terze parti. Il notifier conserva la [propria licenza MIT e attribuzione](extensions/zilpio-codex-notifier/LICENSE.md); la provenienza degli asset aggiunti è documentata in [FORK-NOTICES.md](FORK-NOTICES.md). Marchi e loghi appartengono ai rispettivi titolari.

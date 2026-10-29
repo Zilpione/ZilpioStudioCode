@@ -54,3 +54,16 @@ dist
 .v[0-9]*/
 # Local agent validation evidence
 .agent-validation/
+
+# Locally built launcher
+/ZSCode.exe
+
+# Personal workspace and account defaults stay on the local machine.
+/.vscode/settings.json
+/extensions/zilpio-codex/profiles.json
+/scripts/preview-zilpio.local.ps1
+/ZILPIO-PROJECT.md
+/docs/superpowers/
+/.env
+/.env.*
+!/.env.example

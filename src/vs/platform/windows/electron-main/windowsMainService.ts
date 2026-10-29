@@ -13,6 +13,7 @@ import { CharCode } from '../../../base/common/charCode.js';
 import { Emitter, Event } from '../../../base/common/event.js';
 import { isWindowsDriveLetter, parseLineAndColumnAware, sanitizeFilePath, toSlashes } from '../../../base/common/extpath.js';
 import { getPathLabel } from '../../../base/common/labels.js';
+import { parse } from '../../../base/common/json.js';
 import { Disposable, DisposableStore, IDisposable } from '../../../base/common/lifecycle.js';
 import { Schemas } from '../../../base/common/network.js';
 import { basename, join, normalize, posix } from '../../../base/common/path.js';
@@ -42,7 +43,7 @@ import { CodeWindow } from './windowImpl.js';
 import { IOpenConfiguration, IOpenEmptyConfiguration, IWindowsCountChangedEvent, IWindowsMainService, OpenContext, getLastFocused } from './windows.js';
 import { findWindowOnExtensionDevelopmentPath, findWindowOnFile, findWindowOnWorkspaceOrFolder } from './windowsFinder.js';
 import { IWindowState, WindowsStateHandler } from './windowsStateHandler.js';
-import { IRecent } from '../../workspaces/common/workspaces.js';
+import { IRecent, IStoredWorkspace } from '../../workspaces/common/workspaces.js';
 import { hasWorkspaceFileExtension, IAnyWorkspaceIdentifier, ISingleFolderWorkspaceIdentifier, isSingleFolderWorkspaceIdentifier, isWorkspaceIdentifier, IWorkspaceIdentifier, toWorkspaceIdentifier } from '../../workspace/common/workspace.js';
 import { createEmptyWorkspaceIdentifier, getSingleFolderWorkspaceIdentifier, getWorkspaceIdentifier } from '../../workspaces/node/workspaces.js';
 import { IWorkspacesHistoryMainService } from '../../workspaces/electron-main/workspacesHistoryMainService.js';
@@ -642,7 +643,7 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 		if (allWorkspacesToOpen.length > 0) {
 
 			// Check for existing instances
-			const windowsOnWorkspace = coalesce(allWorkspacesToOpen.map(workspaceToOpen => findWindowOnWorkspaceOrFolder(this.getWindows(), workspaceToOpen.workspace.configPath)));
+			const windowsOnWorkspace = coalesce(allWorkspacesToOpen.map(workspaceToOpen => findWindowOnWorkspaceOrFolder(this.getWindows().filter(window => potentialNewWindowsCount === 0 || (!openFolderInNewWindow && (openConfig.contextWindowId === undefined || window.id === openConfig.contextWindowId))), workspaceToOpen.workspace.configPath)));
 			if (windowsOnWorkspace.length > 0) {
 				const windowOnWorkspace = windowsOnWorkspace[0];
 				const filesToOpenInWindow = isEqualAuthority(filesToOpen?.remoteAuthority, windowOnWorkspace.remoteAuthority) ? filesToOpen : undefined;
@@ -674,7 +675,7 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 		if (allFoldersToOpen.length > 0) {
 
 			// Check for existing instances
-			const windowsOnFolderPath = coalesce(allFoldersToOpen.map(folderToOpen => findWindowOnWorkspaceOrFolder(this.getWindows(), folderToOpen.workspace.uri)));
+			const windowsOnFolderPath = coalesce(allFoldersToOpen.map(folderToOpen => findWindowOnWorkspaceOrFolder(this.getWindows().filter(window => potentialNewWindowsCount === 0 || (!openFolderInNewWindow && (openConfig.contextWindowId === undefined || window.id === openConfig.contextWindowId))), folderToOpen.workspace.uri)));
 			if (windowsOnFolderPath.length > 0) {
 				const windowOnFolderPath = windowsOnFolderPath[0];
 				const filesToOpenInWindow = isEqualAuthority(filesToOpen?.remoteAuthority, windowOnFolderPath.remoteAuthority) ? filesToOpen : undefined;
@@ -800,8 +801,42 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 		});
 	}
 
-	private doOpenFolderOrWorkspace(openConfig: IOpenConfiguration, folderOrWorkspace: IWorkspacePathToOpen | ISingleFolderWorkspacePathToOpen, forceNewWindow: boolean, filesToOpen: IFilesToOpen | undefined, windowToUse?: ICodeWindow): Promise<ICodeWindow> {
+	private async doOpenFolderOrWorkspace(openConfig: IOpenConfiguration, folderOrWorkspace: IWorkspacePathToOpen | ISingleFolderWorkspacePathToOpen, forceNewWindow: boolean, filesToOpen: IFilesToOpen | undefined, windowToUse?: ICodeWindow): Promise<ICodeWindow> {
 		this.logService.trace('windowsManager#doOpenFolderOrWorkspace', { folderOrWorkspace, filesToOpen });
+
+		let workspace = folderOrWorkspace.workspace;
+		const existingWindow = findWindowOnWorkspaceOrFolder(this.getWindows(), isWorkspaceIdentifier(workspace) ? workspace.configPath : workspace.uri);
+		if (existingWindow) {
+			// Reuse the same folders with independent storage and hot-exit backups.
+			const resolved = isWorkspaceIdentifier(workspace) ? await this.workspacesManagementMainService.resolveLocalWorkspace(workspace.configPath) : undefined;
+			const folders = isWorkspaceIdentifier(workspace) ? resolved?.folders : [{ uri: workspace.uri }];
+			if (!folders) {
+				return this.doOpenFilesInExistingWindow(openConfig, existingWindow, filesToOpen);
+			}
+			const temporary = await this.workspacesManagementMainService.createUntitledWorkspace(folders, folderOrWorkspace.remoteAuthority);
+			try {
+				const original: IStoredWorkspace & { settings?: object } = isWorkspaceIdentifier(workspace) ? parse((await this.fileService.readFile(workspace.configPath)).value.toString()) : { folders: [] };
+				if (!isWorkspaceIdentifier(workspace)) {
+					const settingsFile = extUriBiasedIgnorePathCase.joinPath(workspace.uri, '.vscode', 'settings.json');
+					if (await this.fileService.exists(settingsFile)) {
+						original.settings = parse((await this.fileService.readFile(settingsFile)).value.toString());
+					}
+				}
+				const target: IStoredWorkspace = JSON.parse(await fs.promises.readFile(temporary.configPath.fsPath, 'utf8'));
+				// Persist internal window state outside untitled workspaces so normal
+				// close/cancel and hot-exit handling do not discard its configuration.
+				const configPath = extUriBiasedIgnorePathCase.joinPath(URI.file(this.environmentMainService.userDataPath), 'WindowWorkspaces', temporary.id, 'workspace.code-workspace');
+				await this.fileService.createFolder(extUriBiasedIgnorePathCase.dirname(configPath));
+				await fs.promises.writeFile(configPath.fsPath, JSON.stringify({ ...original, ...target }, null, '\t'));
+				const duplicate = await this.workspacesManagementMainService.getWorkspaceIdentifier(configPath);
+				if (existingWindow.profile) {
+					await this.userDataProfilesMainService.setProfileForWorkspace(duplicate, existingWindow.profile);
+				}
+				workspace = duplicate;
+			} finally {
+				await this.workspacesManagementMainService.deleteUntitledWorkspace(temporary);
+			}
+		}
 
 		if (!windowToUse) {
 			const resolved = this.resolveContextWindow(openConfig, forceNewWindow);
@@ -810,7 +845,7 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 		}
 
 		return this.openInBrowserWindow({
-			workspace: folderOrWorkspace.workspace,
+			workspace,
 			userEnv: openConfig.userEnv,
 			cli: openConfig.cli,
 			initialStartup: openConfig.initialStartup,

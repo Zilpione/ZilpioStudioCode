@@ -1,0 +1,31 @@
+{
+  "name": "zilpio-codex",
+  "displayName": "Zilpio Codex",
+  "description": "Codex integrato con ambienti separati e storico unico.",
+  "version": "0.1.0",
+  "publisher": "zilpio",
+  "license": "MIT",
+  "type": "commonjs",
+  "engines": { "vscode": "^1.100.0" },
+  "main": "./extension.js",
+  "extensionKind": ["ui"],
+  "activationEvents": ["onStartupFinished"],
+  "capabilities": { "untrustedWorkspaces": { "supported": false } },
+  "contributes": {
+    "commands": [
+      { "command": "zilpio.workspaces.open", "title": "Zilpio: Workspace" },
+      { "command": "zilpio.trello.open", "title": "Zilpio: Trello" },
+      { "command": "zilpio.codex.open", "title": "Zilpio: Apri Codex" },
+      { "command": "zilpio.codex.profile", "title": "Zilpio: Cambia Profilo Codex" },
+      { "command": "zilpio.codex.newEnvironment", "title": "Zilpio: Nuovo Ambiente Codex" },
+      { "command": "zilpio.codex.editProfiles", "title": "Zilpio: Modifica Registro Profili" },
+      { "command": "zilpio.codex.login", "title": "Zilpio: Collega Account al Profilo" }
+    ],
+    "configuration": {
+      "title": "Zilpio Codex",
+      "properties": {
+        "zilpio.codex.binaryPath": { "type": "string", "default": "", "scope": "application", "description": "Percorso del binario ufficiale codex.exe. Se vuoto, rileva l'installazione locale." }
+      }
+    }
+  }
+}

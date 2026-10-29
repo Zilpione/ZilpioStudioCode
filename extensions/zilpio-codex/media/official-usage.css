@@ -1,0 +1,53 @@
+.zilpio-usage { width: 100%; flex: 0 0 100%; padding: 5px 12px 8px; box-sizing: border-box; font: 11px/1.4 var(--vscode-font-family, sans-serif); color: var(--vscode-foreground, inherit); }
+.zilpio-usage-row { display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; margin-top: 5px; }
+.zilpio-usage-value { opacity: .8; }
+.zilpio-usage-track { grid-column: 1 / -1; height: 5px; border-radius: 3px; overflow: hidden; background: var(--vscode-progressBar-background, #8884); }
+.zilpio-usage-fill { height: 100%; border-radius: inherit; transition: width .2s ease; }
+.zilpio-usage-fill[data-color="green"] { background: #46b978; }
+.zilpio-usage-fill[data-color="yellow"] { background: #e0b447; }
+.zilpio-usage-fill[data-color="red"] { background: #e46767; }
+[data-zilpio-label="Permessi"] { width: auto !important; gap: 4px; padding-inline: 5px !important; }
+[data-zilpio-label="Permessi"]::after { content: "Permessi"; font-size: 11px; }
+[data-zilpio-label="Modello"]::before { content: "Modello: "; font-size: 11px; opacity: .75; }
+.zilpio-current-model { border: 0; background: transparent; color: inherit; font: inherit; font-size: 11px; padding: 3px 6px; cursor: pointer; max-width: 100%; overflow-wrap: anywhere; }
+.zilpio-current-model:hover { background: var(--vscode-toolbar-hoverBackground, #8882); }
+@media (prefers-reduced-motion: reduce) { .zilpio-usage-fill { transition: none; } }
+.zilpio-account-selector, .zilpio-environment-selector { appearance: none; border: 0; background: transparent; color: inherit; font: inherit; font-size: 12px; border-radius: 5px; margin-left: 10px; padding: 3px 6px; cursor: pointer; white-space: nowrap; }
+.zilpio-account-selector:hover, .zilpio-environment-selector:hover { background: var(--vscode-toolbar-hoverBackground, #8882); }
+.zilpio-account-selector:focus-visible, .zilpio-environment-selector:focus-visible { outline: 1px solid var(--vscode-focusBorder, #58a6ff); }
+.zilpio-account-selector:disabled, .zilpio-environment-selector:disabled { opacity: .5; cursor: wait; }
+.zilpio-composer-footer { width: 100%; flex: 0 0 100%; grid-column: 1 / -1; box-sizing: border-box; margin-top: 5px; }
+.zilpio-composer-account-row { display: flex; flex-wrap: wrap; align-items: center; padding: 0 6px; }
+.zilpio-composer-account-row .zilpio-account-selector { margin-left: 0; }
+.zilpio-environment-selector { margin-left: 4px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.zilpio-account-menu { position: fixed; inset: auto; margin: 0; padding: 5px; box-sizing: border-box; min-width: min(220px, calc(100vw - 16px)); overflow-y: auto; border: 1px solid var(--vscode-widget-border, #555); border-radius: 8px; box-shadow: 0 4px 16px #0005; background: var(--vscode-menu-background, #252526); color: var(--vscode-menu-foreground, #eee); font: 12px/1.4 var(--vscode-font-family, sans-serif); }
+.zilpio-account-menu button { display: block; width: 100%; padding: 7px 10px; border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; overflow-wrap: anywhere; }
+.zilpio-account-menu button[aria-checked="true"]::before { content: '✓ '; }
+.zilpio-account-menu button:hover, .zilpio-account-menu button:focus-visible { outline: none; background: var(--vscode-menu-selectionBackground, #094771); color: var(--vscode-menu-selectionForeground, #fff); }
+.zilpio-account-menu hr { margin: 5px; border: 0; border-top: 1px solid var(--vscode-menu-separatorBackground, #555); }
+.zilpio-model-settings-button { border: 0; border-radius: 5px; padding: 3px 6px; background: transparent; color: inherit; font: inherit; font-size: 12px; cursor: pointer; }
+.zilpio-model-settings-button:hover { background: var(--vscode-toolbar-hoverBackground, #8882); }
+.zilpio-model-settings { width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 32px); box-sizing: border-box; padding: 16px; border: 1px solid var(--vscode-widget-border, #555); border-radius: 10px; color: var(--vscode-foreground, #eee); background: var(--vscode-editor-background, #181818); font: 12px/1.5 var(--vscode-font-family, sans-serif); }
+.zilpio-model-settings::backdrop { background: #0007; }
+.zilpio-model-settings header, .zilpio-model-settings footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.zilpio-model-settings h2 { font-size: 16px; margin: 0; }
+.zilpio-model-settings button { padding: 5px 10px; border: 1px solid var(--vscode-button-border, #555); border-radius: 5px; background: var(--vscode-button-secondaryBackground, #333); color: inherit; cursor: pointer; }
+.zilpio-model-settings button:disabled { opacity: .5; }
+.zilpio-model-settings input[type="search"] { width: 100%; padding: 6px; border: 1px solid var(--vscode-input-border, #555); background: var(--vscode-input-background, #333); color: inherit; border-radius: 5px; }
+.zilpio-model-list { max-height: 48vh; overflow: auto; margin-top: 10px; }
+.zilpio-model-list fieldset { border: 1px solid var(--vscode-widget-border, #444); border-radius: 6px; margin: 8px 0; padding: 6px 10px 10px; }
+.zilpio-model-list fieldset[hidden] { display: none; }
+.zilpio-model-list legend { padding: 0 4px; font-weight: 600; }
+.zilpio-model-list small { opacity: .7; overflow-wrap: anywhere; }
+.zilpio-model-efforts { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 6px; }
+.zilpio-model-settings label { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+.zilpio-model-settings input { accent-color: var(--vscode-focusBorder, #58a6ff); }
+.zilpio-model-list fieldset { position: relative; padding-right: 64px; }
+.zilpio-model-settings .zilpio-model-blacklist { position: absolute; right: 6px; top: 2px; border: 0; background: transparent; font-size: 30px; line-height: 30px; padding: 2px 8px; }
+.zilpio-model-list fieldset[data-blacklisted="true"] { padding-right: 90px; }
+.zilpio-model-settings fieldset[data-blacklisted="true"] .zilpio-model-blacklist { font-size: 11px; }
+.zilpio-model-blacklist-section { margin-top: 10px; border-top: 1px solid var(--vscode-widget-border, #444); padding-top: 8px; }
+.zilpio-model-blacklist-section summary { cursor: pointer; }
+.zilpio-model-blacklist-section legend input { display: none; }
+/* Outline only the message input, preserving the surrounding composer styles. */
+[data-composer-input], form[data-thread-find-composer] textarea, form[data-chatgpt-composer] textarea { outline: 2px solid var(--zilpio-workspace-color, transparent); outline-offset: -2px; }

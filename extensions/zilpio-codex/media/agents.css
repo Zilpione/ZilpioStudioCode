@@ -1,0 +1,35 @@
+/* Copyright (c) Microsoft Corporation. Licensed under the MIT License. */
+.zilpio-agents-section { padding: 8px; color: var(--vscode-foreground, #ddd); font-size: 12px; }
+body.zilpio-agents-docked { display: flex; flex-direction: column; }
+body.zilpio-agents-docked > .zilpio-agents-section { flex: 0 0 auto; max-height: 30vh; overflow: auto; border-bottom: 1px solid var(--vscode-widget-border, #ffffff18); }
+body.zilpio-agents-docked > #root { flex: 1 1 0; min-height: 0; height: 0; width: 100%; }
+.zilpio-agents-section summary { cursor: pointer; padding: 6px; font-weight: 600; }
+.zilpio-agents-list { display: grid; gap: 3px; }
+body.zilpio-agents-docked [data-zilpio-agent-row] { display: none !important; }
+.zilpio-agents-empty { margin: 6px; color: var(--vscode-descriptionForeground, #aaa); }
+.zilpio-agent-entry { display: flex; align-items: center; gap: 8px; text-align: left; width: 100%; padding: 7px; border: 0; border-radius: 6px; color: inherit; background: transparent; cursor: pointer; }
+.zilpio-agent-entry:hover { background: var(--vscode-list-hoverBackground, #ffffff12); }
+.zilpio-agent-entry small { margin-left: auto; color: var(--vscode-descriptionForeground, #aaa); font-size: 10px; }
+.zilpio-agent-entry[aria-disabled=true] { opacity: .6; }
+.zilpio-agent-icon { width: 16px; height: 16px; flex: 0 0 16px; display: inline-block; background: currentColor; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3Cpath d='M4 22v-3a8 8 0 0 1 16 0v3z'/%3E%3C/svg%3E") center / contain no-repeat; }
+[data-thread-title][data-zilpio-label] { position: relative; color: transparent !important; }
+[data-thread-title][data-zilpio-label] > * { visibility: hidden; }
+[data-thread-title][data-zilpio-label]::after { content: attr(data-zilpio-label); position: absolute; inset: 0; color: var(--zilpio-agent-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.zilpio-agent-dialog { width: min(360px, calc(100vw - 32px)); padding: 20px; border: 1px solid var(--vscode-widget-border, #555); border-radius: 10px; background: var(--vscode-editorWidget-background, #252525); color: var(--vscode-foreground, #eee); }
+.zilpio-agent-dialog::backdrop { background: #0007; }
+.zilpio-agent-dialog form { display: grid; gap: 14px; }
+.zilpio-agent-dialog h2 { font-size: 16px; margin: 0; }
+.zilpio-agent-dialog label { display: grid; gap: 6px; }
+.zilpio-agent-dialog input[name=name] { background: var(--vscode-input-background, #333); color: inherit; border: 1px solid var(--vscode-input-border, #777); padding: 7px; border-radius: 4px; width: 100%; box-sizing: border-box; }
+.zilpio-agent-dialog small { color: var(--vscode-descriptionForeground, #aaa); }
+.zilpio-agent-dialog [role=status] { min-height: 18px; margin: 0; }
+.zilpio-agent-dialog footer { display: flex; justify-content: flex-end; gap: 8px; }
+.zilpio-agent-dialog button { border: 0; border-radius: 4px; padding: 6px 12px; background: var(--vscode-button-secondaryBackground, #454545); color: inherit; cursor: pointer; }
+.zilpio-agent-dialog button[type=submit] { background: var(--vscode-button-background, #2865a0); color: var(--vscode-button-foreground, #fff); }
+.zilpio-agent-dialog button:disabled { opacity: .5; }
+.zilpio-agent-menu, .zilpio-agent-suggestions { position: fixed; z-index: 100000; margin: 0; padding: 4px; border: 1px solid var(--vscode-menu-border, #555); border-radius: 6px; color: var(--vscode-menu-foreground, #ddd); background: var(--vscode-menu-background, #252525); box-shadow: 0 6px 18px #0005; min-width: 190px; }
+.zilpio-agent-menu button, .zilpio-agent-suggestions button { display: flex; align-items: center; gap: 8px; width: 100%; border: 0; background: transparent; color: inherit; text-align: left; padding: 7px 10px; border-radius: 4px; cursor: pointer; }
+.zilpio-agent-menu button:hover, .zilpio-agent-suggestions button:hover, .zilpio-agent-suggestions button:focus { background: var(--vscode-list-hoverBackground, #ffffff18); }
+.zilpio-agent-suggestions[hidden] { display: none; }
+.zilpio-agents-status { position: fixed; bottom: 14px; left: 14px; right: 14px; padding: 10px; z-index: 100001; background: var(--vscode-editorWidget-background, #252525); color: var(--vscode-foreground, #eee); border: 1px solid var(--vscode-widget-border, #666); border-radius: 6px; }
+.zilpio-agent-entry:focus-visible, .zilpio-agent-dialog :focus-visible, .zilpio-agent-menu button:focus-visible { outline: 1px solid var(--vscode-focusBorder, #8d9aff); outline-offset: 2px; }

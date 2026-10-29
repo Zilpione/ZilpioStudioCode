@@ -1,0 +1,249 @@
+{
+  "name": "codex-notifier-telegram",
+  "displayName": "Zilpio Codex Notifier",
+  "description": "Play a gentle sound, flash VS Code, and optionally notify Telegram when Codex work finishes.",
+  "version": "0.0.7",
+  "publisher": "zilpio",
+  "icon": "media/marketplace-icon.png",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "openai",
+    "notification",
+    "alert",
+    "telegram",
+    "sound"
+  ],
+  "engines": {
+    "vscode": "^1.96.2"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:codexNotifierTelegram.openSettingsPanel",
+    "onCommand:codexNotifierTelegram.notifyDone",
+    "onCommand:codexNotifierTelegram.testAlert",
+    "onCommand:codexNotifierTelegram.selectSound",
+    "onCommand:codexNotifierTelegram.dismissAlert",
+    "onCommand:codexNotifierTelegram.markStarted"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "codexNotifierTelegram.openSettingsPanel",
+        "title": "Open Notifier Settings",
+        "category": "Zilpio Codex Notifier",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "codexNotifierTelegram.notifyDone",
+        "title": "Notify Codex Done",
+        "category": "Zilpio Codex Notifier",
+        "icon": "$(bell)"
+      },
+      {
+        "command": "codexNotifierTelegram.testAlert",
+        "title": "Test Completion Alert",
+        "category": "Zilpio Codex Notifier",
+        "icon": "$(debug-start)"
+      },
+      {
+        "command": "codexNotifierTelegram.selectSound",
+        "title": "Select Notification Sound",
+        "category": "Zilpio Codex Notifier",
+        "icon": "$(file-media)"
+      },
+      {
+        "command": "codexNotifierTelegram.dismissAlert",
+        "title": "Dismiss Completion Alert",
+        "category": "Zilpio Codex Notifier",
+        "icon": "$(check)"
+      },
+      {
+        "command": "codexNotifierTelegram.markStarted",
+        "title": "Mark Codex Started",
+        "category": "Zilpio Codex Notifier",
+        "icon": "$(watch)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "codexNotifierTelegram.openSettingsPanel",
+          "group": "navigation@2",
+          "when": "resourceScheme == openai-codex"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "codexNotifierTelegram.openSettingsPanel",
+          "group": "navigation@99",
+          "when": "view == chatgpt.sidebarView || view == chatgpt.sidebarSecondaryView"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "codexNotifierTelegram",
+          "title": "Zilpio Codex Notifier",
+          "icon": "media/marketplace-icon.png"
+        }
+      ]
+    },
+    "views": {
+      "codexNotifierTelegram": [
+        {
+          "id": "codexNotifierTelegram.settingsView",
+          "name": "Notification Settings",
+          "type": "webview",
+          "when": "true"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Zilpio Codex Notifier",
+      "properties": {
+        "codexNotifierTelegram.telegram.enabled": {
+          "type": "boolean",
+          "default": false,
+          "scope": "machine",
+          "description": "Send a Telegram message when Codex completion is detected. Requires the main notifier to be enabled."
+        },
+        "codexNotifierTelegram.telegram.botToken": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "description": "Telegram bot token from BotFather. Stored in plain text in settings.json; use User settings and do not commit this token."
+        },
+        "codexNotifierTelegram.telegram.chatId": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "description": "Telegram destination Chat ID (including the minus sign for groups), or a channel @username. Start your bot or add it to the destination chat first."
+        },
+        "codexNotifierTelegram.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Codex completion alerts."
+        },
+        "codexNotifierTelegram.playSound": {
+          "type": "boolean",
+          "default": true,
+          "description": "Play a notification sound when Codex completion is detected."
+        },
+        "codexNotifierTelegram.soundVolume": {
+          "type": "number",
+          "default": 50,
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Notification sound volume as a percentage. Set to 0 to mute it."
+        },
+        "codexNotifierTelegram.soundPath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "description": "Path to a custom notification audio file. Leave empty to use the bundled MP3. Relative paths are resolved from the first workspace folder. The 'Select Notification Sound' command imports a persistent copy into VS Code storage."
+        },
+        "codexNotifierTelegram.flashMode": {
+          "type": "string",
+          "enum": [
+            "editorOverlay",
+            "workbenchColors",
+            "off"
+          ],
+          "default": "workbenchColors",
+          "description": "Visual completion alert. workbenchColors blinks a green 'Codex is done' status item and restores its temporary colors; editorOverlay is a compatibility alias."
+        },
+        "codexNotifierTelegram.stopOnInteraction": {
+          "type": "boolean",
+          "default": true,
+          "description": "Stop the visual alert when the VS Code window gains focus or the user interacts with editors or terminals."
+        },
+        "codexNotifierTelegram.flashIntervalMs": {
+          "type": "number",
+          "default": 900,
+          "minimum": 500,
+          "maximum": 3000,
+          "description": "Interval for each status bar pulse step."
+        },
+        "codexNotifierTelegram.maxFlashSeconds": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 600,
+          "description": "Maximum time the visual alert should continue if there is no interaction. Set to 0 or 1 to keep it active until interaction or dismissal."
+        },
+        "codexNotifierTelegram.terminalCommandPattern": {
+          "type": "string",
+          "default": "(^|\\\\b)(codex|npx\\\\s+codex|pnpm\\\\s+codex|npm\\\\s+exec\\\\s+codex)(\\\\b|\\\\s)",
+          "description": "JavaScript regular expression used to detect Codex CLI commands in terminals with shell integration."
+        },
+        "codexNotifierTelegram.detectTerminalCodex": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically alert when a matching terminal command ends. Requires VS Code terminal shell integration."
+        },
+        "codexNotifierTelegram.detectCodexProcess": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically alert when a short-lived Codex process exits. Off by default because the OpenAI Codex extension app-server is long-lived and not one process per turn."
+        },
+        "codexNotifierTelegram.detectOpenAiCodexLog": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically alert when the OpenAI Codex extension reports that a turn has completed."
+        },
+        "codexNotifierTelegram.openAiCodexDetectionMode": {
+          "type": "string",
+          "enum": [
+            "chatHeuristic",
+            "conservative"
+          ],
+          "default": "chatHeuristic",
+          "description": "How to detect OpenAI Codex extension completion. chatHeuristic catches chat-only turns by correlating turn activity with the final read-state event; conservative only uses stronger local completion markers."
+        },
+        "codexNotifierTelegram.processPollIntervalMs": {
+          "type": "number",
+          "default": 500,
+          "minimum": 500,
+          "maximum": 10000,
+          "description": "How often to check for Codex process start and exit."
+        },
+        "codexNotifierTelegram.notifyWhenWindowFocused": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a small VS Code information notification when completion is detected."
+        },
+        "codexNotifierTelegram.taskbarFlash": {
+          "type": "boolean",
+          "default": true,
+          "description": "On Windows, flash the VS Code taskbar icon while the completion alert is active."
+        },
+        "codexNotifierTelegram.workbenchColorTarget": {
+          "type": "string",
+          "enum": [
+            "workspace",
+            "global"
+          ],
+          "default": "workspace",
+          "description": "Where temporary workbench color customizations are written when flashMode is workbenchColors. Workspace scope automatically falls back to global when no workspace is open."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "test": "npm run compile && node --test test/*.test.js",
+    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/vscode": "^1.96.0",
+    "typescript": "^5.8.3"
+  }
+}

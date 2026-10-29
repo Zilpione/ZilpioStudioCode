@@ -1,0 +1,25 @@
+/* Copyright (c) Microsoft Corporation. Licensed under the MIT License. */
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+body { margin: 0; height: 100vh; display: flex; flex-direction: column; color: var(--vscode-editor-foreground); background: var(--vscode-editor-background); font-family: var(--vscode-font-family, system-ui); font-size: var(--vscode-font-size, 13px); }
+header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px 18px; border-bottom: 1px solid var(--vscode-widget-border, #444); }
+header > div { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+h1 { margin: 0; font-size: 20px; }
+#project { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--vscode-descriptionForeground); }
+nav { display: flex; flex-wrap: wrap; gap: 6px; }
+button, input { font: inherit; border: 1px solid var(--vscode-input-border, #555); border-radius: 4px; padding: 6px 10px; }
+button { color: var(--vscode-button-secondaryForeground); background: var(--vscode-button-secondaryBackground); cursor: pointer; }
+button:hover { background: var(--vscode-button-secondaryHoverBackground); }
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible, input:focus-visible { outline: 1px solid var(--vscode-focusBorder); outline-offset: 2px; }
+#notice { margin: 0; padding: 6px 18px; font-size: 12px; color: var(--vscode-descriptionForeground); }
+#connect { width: min(540px, 100%); margin: 36px auto; padding: 0 20px; }
+form { display: grid; gap: 12px; margin-top: 24px; }
+form > div { display: flex; gap: 8px; }
+input { width: 100%; color: var(--vscode-input-foreground); background: var(--vscode-input-background); }
+#save { color: var(--vscode-button-foreground); background: var(--vscode-button-background); }
+#error { color: var(--vscode-errorForeground); }
+#native-trello { flex: 1; min-height: 0; position: relative; }
+#trello-status { padding: 20px; }
+[hidden] { display: none !important; }
+@media (max-width: 620px) { header { align-items: flex-start; flex-direction: column; gap: 10px; } }

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "profiles": [
+    {
+      "id": "default",
+      "name": "Default",
+      "provider": "openai",
+      "home": "~/.codex-account/default"
+    }
+  ]
+}
